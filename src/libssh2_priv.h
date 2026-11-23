@@ -69,7 +69,7 @@
 #include <sys/uio.h>  /* for struct iovec on some platforms */
 #endif
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(LIBSSH2_OPENTRANSPORT)
 #include <sys/socket.h>
 #endif
 #ifdef HAVE_SYS_IOCTL_H
