@@ -40,7 +40,13 @@
 
 #include <assert.h>
 
-#ifdef _WIN32
+#ifdef LIBSSH2_OPENTRANSPORT
+/* Classic Mac OS has no BSD sockets. The application installs
+   LIBSSH2_CALLBACK_RECV/SEND callbacks that use Open Transport, so these
+   defaults are never used; they report "nothing transferred". */
+#define SSH2_RECV_LOW(s, b, l, f)  ((void)(s), (void)(b), (void)(l), (void)(f), (ssize_t)0)
+#define SSH2_SEND_LOW(s, b, l, f)  ((void)(s), (void)(b), (void)(l), (void)(f), (ssize_t)0)
+#elif defined(_WIN32)
 /* Force parameter type. */
 #define SSH2_RECV_LOW(s, b, l, f)  recv(s, b, (int)(l), f)
 #define SSH2_SEND_LOW(s, b, l, f)  send(s, b, (int)(l), f)

@@ -550,6 +550,13 @@ void *libssh2_session_callback_set(LIBSSH2_SESSION *session,
  */
 int ssh2_wait_socket(LIBSSH2_SESSION *session, ssh2_time_t start_time)
 {
+#ifdef LIBSSH2_OPENTRANSPORT
+    /* No select() on classic Mac OS: the application's event loop does
+       the waiting and calls libssh2 again when Open Transport has data. */
+    (void)session;
+    (void)start_time;
+    return 0;
+#else
     int rc;
     int seconds_to_next;
     int dir;
@@ -676,6 +683,7 @@ int ssh2_wait_socket(LIBSSH2_SESSION *session, ssh2_time_t start_time)
     }
 
     return 0; /* ready to try again */
+#endif
 }
 
 static int session_startup(LIBSSH2_SESSION *session, libssh2_socket_t sock)

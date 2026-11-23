@@ -171,8 +171,8 @@
 
 #include "misc.h"
 
-/* 3DS does not seem to have iovec */
-#if defined(_WIN32) || defined(_3DS)
+/* 3DS and classic Mac OS (Open Transport) do not have iovec */
+#if defined(_WIN32) || defined(_3DS) || defined(LIBSSH2_OPENTRANSPORT)
 struct iovec {
     size_t iov_len;
     void *iov_base;

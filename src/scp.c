@@ -1079,10 +1079,32 @@ static LIBSSH2_CHANNEL *scp_send(LIBSSH2_SESSION *session,
         else
             base = path;
 
+#ifdef LIBSSH2_OPENTRANSPORT
+        {
+            /* Retro68's C library can't format 64-bit integers, so write the
+               size digits by hand and format the rest as usual. */
+            char digits[24];
+            char sizebuf[24];
+            size_t n = 0, k = 0;
+            libssh2_uint64_t usize = size > 0 ? (libssh2_uint64_t)size : 0;
+            do {
+                digits[n++] = (char)('0' + (int)(usize % 10));
+                usize /= 10;
+            } while(usize && n < sizeof(digits));
+            while(n)
+                sizebuf[k++] = digits[--n];
+            sizebuf[k] = '\0';
+            len = ssh2_snprintf((char *)session->scpSend_response,
+                                sizeof(session->scpSend_response),
+                                "C0%o %s %s\n",
+                                (unsigned int)mode, sizebuf, base);
+        }
+#else
         len = ssh2_snprintf((char *)session->scpSend_response,
                             sizeof(session->scpSend_response),
                             "C0%o %" SSH2_INT64_T_FORMAT " %s\n",
                             (unsigned int)mode, size, base);
+#endif
         if(len < 0 || (size_t)len >= sizeof(session->scpSend_response)) {
             ssh2_err(session, LIBSSH2_ERROR_SCP_PROTOCOL,
                      "SCP file path too long for response buffer");
